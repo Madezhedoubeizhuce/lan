@@ -20,8 +20,10 @@ public class TextMsgDispatcher implements Dispatcher<String, String> {
 	public boolean send(SocketChannel channel, Attachment<String> attachment) throws IOException {
 		String msg = attachment.getData();
 		if (msg != null && !"".equals(msg)) {
-			Request request = new Request(ByteBuffer.wrap(msg.getBytes()));
-			channel.write(request.getBody());
+//			Request request = new Request(ByteBuffer.wrap(msg.getBytes()));
+//			channel.write(request.getBody());
+			msg = msg + "EOF!";
+			channel.write(ByteBuffer.wrap(msg.getBytes()));
 
 			Log.d(TAG, "---------------------------------------------------------");
 			Log.i(TAG, "write: \"" + msg + "\" to server");
