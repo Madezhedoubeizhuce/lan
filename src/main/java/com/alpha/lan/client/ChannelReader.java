@@ -1,0 +1,126 @@
+package com.alpha.lan.client;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+import java.util.Arrays;
+
+import com.alpha.lan.server.socket.ReceiveDataListener;
+import com.alpha.lan.utils.Log;
+
+public class ChannelReader {
+	private static final String TAG = ChannelReader.class.getSimpleName();
+	private static final String STREAM_END = "EOF!";
+	private final int maxTryTime = 10;
+	private static final byte[] MSG_END = "EOF!".getBytes();
+
+	private ByteBuffer mBuffer;
+
+	public ChannelReader() {
+		mBuffer = ByteBuffer.allocate(1024);
+	}
+
+	public String read(SocketChannel channel) throws IOException {
+		StringBuilder result = new StringBuilder();
+		int tryTime = 0;
+		boolean isSuccess = false;
+
+		// readStream方法有可能没有读取到完整的数据就返回了, 因此这里要多试几次
+		while (tryTime++ < maxTryTime) {
+			ByteArrayOutputStream outputStream = readStream(channel);
+			if (outputStream == null) {
+				throw new RuntimeException("some error when read data from SocketChannel!");
+			}
+
+			result.append(new String(outputStream.toByteArray()).trim());
+
+			if (result.toString().endsWith(STREAM_END)) {
+				result.delete(result.length() - STREAM_END.length(), result.length());
+				isSuccess = true;
+				break;
+			}
+			Log.w(TAG, "receive: " + result.toString() + ", not the end of the data, continue read.");
+
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+		if (!isSuccess) {
+			Log.w(TAG, "miss some data in this message.");
+		}
+
+		Log.d(TAG, "read from channel: " + result);
+
+		return result.toString();
+	}
+
+	private ByteArrayOutputStream readStream(SocketChannel channel) throws IOException {
+		ByteArrayOutputStream outputStream;
+		try {
+			int count = 0;
+			outputStream = new ByteArrayOutputStream();
+
+			// 一般情况下读取的长度为零时说明到了流末尾，也有可能读取长度为0，但并未到接收流的结尾
+			while ((count = channel.read(mBuffer)) > 0) {
+				mBuffer.flip();
+				byte[] data = new byte[count];
+				mBuffer.get(data, 0, count);
+				outputStream.write(data, 0, data.length);
+				mBuffer.clear();
+			}
+			Log.d(TAG, "read completed.");
+		} finally {
+			mBuffer.clear();
+		}
+		return outputStream;
+	}
+	
+	private ByteBuffer readBuffer(SocketChannel channel) throws IOException {
+		ByteBuffer buf = null;
+		try {
+			int count = 0;
+			// 一般情况下读取的长度为零时说明到了流末尾，也有可能读取长度为0，但并未到接收流的结尾
+			while ((count = channel.read(mBuffer)) > 0) {
+				mBuffer.flip();
+				mBuffer.clear();
+			}
+			Log.d(TAG, "read completed.");
+		} finally {
+			mBuffer.clear();
+		}
+		return buf;
+	}
+
+	public void receive(SocketChannel channel, ReceiveDataListener listener) throws IOException {
+		ByteArrayOutputStream outputStream = readStream(channel);
+		byte[] receive = outputStream.toByteArray();
+
+		int protocolFieldSize = MSG_END.length + 3;
+		if (receive.length > protocolFieldSize) {
+			byte id = receive[0];
+			byte type = receive[1];
+			byte typeId = receive[2];
+
+			byte[] end = Arrays.copyOfRange(receive, receive.length - MSG_END.length, receive.length);
+
+			while (!Arrays.equals(end, MSG_END)) {
+				ByteArrayOutputStream receiveStream = new ByteArrayOutputStream();
+				receiveStream.write(receive, 3, receive.length - 3);
+				listener.onData(receiveStream);
+
+				outputStream = readStream(channel);
+				receive = outputStream.toByteArray();
+				end = Arrays.copyOfRange(receive, receive.length - MSG_END.length, receive.length);
+			}
+
+			ByteArrayOutputStream receiveStream = new ByteArrayOutputStream();
+			receiveStream.write(receive, 3, receive.length - protocolFieldSize);
+			listener.onData(receiveStream);
+			listener.end();
+		}
+	}
+}
