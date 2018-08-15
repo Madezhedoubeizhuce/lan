@@ -6,12 +6,12 @@ import java.nio.channels.SocketChannel;
 
 import com.alpha.lan.utils.Log;
 
-public class TextMsgDispatcher implements Dispatcher<String, String> {
-	private static final String TAG = TextMsgDispatcher.class.getSimpleName();
+public class TextMsgSender implements Sender<String, String> {
+	private static final String TAG = TextMsgSender.class.getSimpleName();
 
 	private ChannelReader msgReader;
 
-	public TextMsgDispatcher() {
+	public TextMsgSender() {
 		super();
 		msgReader = new ChannelReader();
 	}
@@ -22,6 +22,7 @@ public class TextMsgDispatcher implements Dispatcher<String, String> {
 		if (msg != null && !"".equals(msg)) {
 //			Request request = new Request(ByteBuffer.wrap(msg.getBytes()));
 //			channel.write(request.getBody());
+			
 			msg = msg + "EOF!";
 			channel.write(ByteBuffer.wrap(msg.getBytes()));
 

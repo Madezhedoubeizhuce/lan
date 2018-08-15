@@ -9,10 +9,10 @@ import com.alpha.lan.utils.Log;
 
 public abstract class Client<T, K> {
 	private static final String TAG = Client.class.getSimpleName();
-	protected Dispatcher<T, K> mDispatcher;
+	protected Sender<T, K> mSender;
 
-	public Client(Dispatcher<T, K> dispatcher) {
-		mDispatcher = dispatcher;
+	public Client(Sender<T, K> sender) {
+		mSender = sender;
 	}
 
 	public abstract void init(String address, int port) throws IOException;

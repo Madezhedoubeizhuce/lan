@@ -36,7 +36,7 @@ public class Server {
 		return port;
 	}
 
-	public void init(int port, NioCallback callback) throws IOException {
+	public void init(int port, OnRequestListener listener) throws IOException {
 		ServerSocketChannel serverChannel = ServerSocketChannel.open();
 		serverChannel.configureBlocking(false);
 		serverChannel.socket().bind(new InetSocketAddress(port));
@@ -46,7 +46,7 @@ public class Server {
 		serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 
 		channelReader = new ChannelReader();
-		poll(callback);
+		poll(listener);
 		Log.d(TAG, "initServer: init success");
 	}
 
@@ -73,7 +73,7 @@ public class Server {
 		isServerRun = false;
 	}
 
-	private void poll(final NioCallback callback) throws IOException {
+	private void poll(final OnRequestListener listener) throws IOException {
 		Log.d(TAG, "NioServer start succeeded");
 
 		new Thread(new Runnable() {
@@ -94,7 +94,7 @@ public class Server {
 							SelectionKey key = iterator.next();
 							iterator.remove();
 
-							processSelectionKey(key, callback);
+							processSelectionKey(key, listener);
 						}
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -106,7 +106,7 @@ public class Server {
 		}).start();
 	}
 
-	private void processSelectionKey(SelectionKey key, NioCallback callback) throws IOException {
+	private void processSelectionKey(SelectionKey key, OnRequestListener listener) throws IOException {
 		Log.d(TAG, "processSelectionKey");
 		if (key.isAcceptable()) {
 			Log.d(TAG, "processSelectionKey: acceptable");
@@ -136,6 +136,8 @@ public class Server {
 				Log.w(TAG, "processSelectionKey: channel is null");
 				return;
 			}
+			
+//			Dispatcher.getInstance().dispatch(channel, listener);
 
 			try {
 				String receiveMsg = channelReader.read(channel);
@@ -149,16 +151,12 @@ public class Server {
 //                    HeartbeatChecker.getInstance().onReceive();
 					channel.write(ByteBuffer.wrap((receiveMsg + STREAM_END).getBytes()));
 				} else {
-					callback.onReceive(receiveMsg, channel);
+					listener.onReceive(receiveMsg, channel);
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 				channel.close();
 			}
 		}
-	}
-
-	public interface NioCallback {
-		void onReceive(String msg, SocketChannel channel);
 	}
 }

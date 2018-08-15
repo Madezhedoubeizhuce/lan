@@ -6,7 +6,7 @@ import com.alpha.lan.client.Client;
 import com.alpha.lan.client.DeviceAddress;
 import com.alpha.lan.client.OnResponseListener;
 import com.alpha.lan.client.PersistentConnectionClient;
-import com.alpha.lan.client.TextMsgDispatcher;
+import com.alpha.lan.client.TextMsgSender;
 import com.alpha.lan.utils.Log;
 import com.alpha.lan.utils.TextUtils;
 
@@ -18,7 +18,7 @@ public class HeartbeatChecker {
 	private boolean isClientStarted = true;
 	private boolean isReceiveResponse = false;
 
-	private Client<String, String> client = new PersistentConnectionClient<String, String>(new TextMsgDispatcher());
+	private Client<String, String> client = new PersistentConnectionClient<String, String>(new TextMsgSender());
 	private OnResponseListener callback = new OnResponseListener() {
 		@Override
 		public void onResponse(String result) {

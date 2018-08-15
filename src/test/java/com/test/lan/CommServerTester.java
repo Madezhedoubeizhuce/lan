@@ -3,6 +3,7 @@ package com.test.lan;
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
+import com.alpha.lan.server.socket.OnRequestListener;
 import com.alpha.lan.server.socket.Server;
 import com.alpha.lan.utils.Log;
 
@@ -12,7 +13,7 @@ public class CommServerTester {
 	public static void main(String[] args) {
 		try {
 			Server server = new Server();
-			server.init(6969, new Server.NioCallback() {
+			server.init(6969, new OnRequestListener() {
 				
 				@Override
 				public void onReceive(String msg, SocketChannel channel) {

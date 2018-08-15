@@ -9,8 +9,8 @@ import java.nio.channels.SocketChannel;
 
 import com.alpha.lan.utils.Log;
 
-public class FileDispatcher implements Dispatcher<File, String> {
-	private static final String TAG = FileDispatcher.class.getSimpleName();
+public class FileSender implements Sender<File, String> {
+	private static final String TAG = FileSender.class.getSimpleName();
 
 	private ByteBuffer sendBuf = ByteBuffer.allocate(1024 * 10);
 

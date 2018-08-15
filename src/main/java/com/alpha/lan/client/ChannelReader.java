@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 
+import com.alpha.lan.server.socket.ReceiveData;
 import com.alpha.lan.server.socket.ReceiveDataListener;
 import com.alpha.lan.utils.Log;
 
@@ -78,49 +79,79 @@ public class ChannelReader {
 		}
 		return outputStream;
 	}
-	
-	private ByteBuffer readBuffer(SocketChannel channel) throws IOException {
-		ByteBuffer buf = null;
-		try {
-			int count = 0;
-			// 一般情况下读取的长度为零时说明到了流末尾，也有可能读取长度为0，但并未到接收流的结尾
-			while ((count = channel.read(mBuffer)) > 0) {
-				mBuffer.flip();
-				mBuffer.clear();
+
+	private byte[] readBuffer(SocketChannel channel) throws IOException {
+		ByteBuffer buf = ByteBuffer.allocate(1024);
+		int count = 0;
+		int tryTime = 0;
+		while ((count = channel.read(buf)) <= 0 && tryTime++ < 3) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
-			Log.d(TAG, "read completed.");
-		} finally {
-			mBuffer.clear();
 		}
-		return buf;
+
+		buf.flip();
+		byte[] bufArr = new byte[count];
+		buf.get(bufArr, 0, count);
+		buf.clear();
+		return bufArr;
 	}
 
-	public void receive(SocketChannel channel, ReceiveDataListener listener) throws IOException {
-		ByteArrayOutputStream outputStream = readStream(channel);
-		byte[] receive = outputStream.toByteArray();
+	private ByteBuffer createBuffer(byte[] buf, int offset, int length) {
+		ByteBuffer buffer = ByteBuffer.allocate(buf.length);
+		buffer.put(buf, offset, length);
+		buffer.flip();
+		return buffer;
+	}
+
+	public void read(SocketChannel channel, ReceiveDataListener listener) throws IOException {
+		byte[] buf = readBuffer(channel);
 
 		int protocolFieldSize = MSG_END.length + 3;
-		if (receive.length > protocolFieldSize) {
-			byte id = receive[0];
-			byte type = receive[1];
-			byte typeId = receive[2];
+		if (buf.length >= protocolFieldSize) {
+			byte id = buf[0];
+			byte type = buf[1];
+			byte typeId = buf[2];
 
-			byte[] end = Arrays.copyOfRange(receive, receive.length - MSG_END.length, receive.length);
+			byte[] end = Arrays.copyOfRange(buf, buf.length - MSG_END.length, buf.length);
 
+			int offset = 3;
+			int writeLen = buf.length - 3;
 			while (!Arrays.equals(end, MSG_END)) {
-				ByteArrayOutputStream receiveStream = new ByteArrayOutputStream();
-				receiveStream.write(receive, 3, receive.length - 3);
-				listener.onData(receiveStream);
+				listener.onStart(RequestType.valueOf(type));
 
-				outputStream = readStream(channel);
-				receive = outputStream.toByteArray();
-				end = Arrays.copyOfRange(receive, receive.length - MSG_END.length, receive.length);
+				ReceiveData data = new ReceiveData(id, type, typeId);
+				data.setData(createBuffer(buf, offset, writeLen));
+				listener.onData(data);
+
+				byte[] tmpBuf = readBuffer(channel);
+				if (tmpBuf.length < MSG_END.length) {
+					buf = Arrays.copyOf(buf, buf.length + tmpBuf.length);
+					for (int i = buf.length - tmpBuf.length; i < buf.length; i++) {
+						buf[i] = tmpBuf[i];
+					}
+				}
+
+				end = Arrays.copyOfRange(buf, buf.length - MSG_END.length, buf.length);
+				offset = 0;
+				writeLen = buf.length;
 			}
 
-			ByteArrayOutputStream receiveStream = new ByteArrayOutputStream();
-			receiveStream.write(receive, 3, receive.length - protocolFieldSize);
-			listener.onData(receiveStream);
+			// 说明一次就读完了所有数据
+			if (offset == 3) {
+				listener.onStart(RequestType.valueOf(type));
+			}
+
+			writeLen = writeLen - MSG_END.length;
+			ReceiveData data = new ReceiveData(id, type, typeId);
+			data.setData(createBuffer(buf, offset, writeLen));
+
+			listener.onData(data);
 			listener.end();
+		} else {
+			listener.onError(new Exception("receive msg length less than protocol field size!"));
 		}
 	}
 }

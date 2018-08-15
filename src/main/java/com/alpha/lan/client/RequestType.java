@@ -12,4 +12,15 @@ public enum RequestType {
 	public byte value() {
 		return this.value;
 	}
+
+	public static RequestType valueOf(byte value) {
+		switch (value) {
+		case 0:
+			return TEXT;
+		case 1:
+			return FILE;
+		default:
+			return null;
+		}
+	}
 }

@@ -1,9 +1,13 @@
 package com.alpha.lan.server.socket;
 
-import java.io.ByteArrayOutputStream;
+import com.alpha.lan.client.RequestType;
 
 public interface ReceiveDataListener {
-	void onData(ByteArrayOutputStream data);
+	void onStart(RequestType type);
+	
+	void onData(ReceiveData buf);
 	
 	void end();
+	
+	void onError(Exception err);
 }

@@ -18,7 +18,7 @@ public class ShortConnectionClient<T, K> extends Client<T, K> {
 	private boolean listening = true;
 	private boolean isStarted = false;
 
-	public ShortConnectionClient(Dispatcher<T, K> dispatcher) {
+	public ShortConnectionClient(Sender<T, K> dispatcher) {
 		super(dispatcher);
 	}
 	
@@ -85,7 +85,7 @@ public class ShortConnectionClient<T, K> extends Client<T, K> {
 				Log.d(TAG, "connected: " + result);
 			}
 
-			boolean writeSuccess = mDispatcher.send(channel, attachment);
+			boolean writeSuccess = mSender.send(channel, attachment);
 			if (!writeSuccess) {
 				Log.w(TAG, "a empty msg to server was intercepted!");
 				channel.close();
@@ -142,7 +142,7 @@ public class ShortConnectionClient<T, K> extends Client<T, K> {
 
 							SocketChannel channel = (SocketChannel) key.channel();
 							try {
-								mDispatcher.receive(channel, getAttachment(key));
+								mSender.receive(channel, getAttachment(key));
 							} finally {
 								channel.close();
 							}

@@ -3,14 +3,14 @@ package com.test.lan;
 import com.alpha.lan.client.Client;
 import com.alpha.lan.client.OnResponseListener;
 import com.alpha.lan.client.PersistentConnectionClient;
-import com.alpha.lan.client.TextMsgDispatcher;
+import com.alpha.lan.client.TextMsgSender;
 import com.alpha.lan.utils.Log;
 
 public class PersistConnClientTester {
 	private static final String TAG = "PersistConnClientTester->";
 
 	public static void main(String[] args) {
-		Client<String, String> client = new PersistentConnectionClient<String, String>(new TextMsgDispatcher());
+		Client<String, String> client = new PersistentConnectionClient<String, String>(new TextMsgSender());
 		try {
 			client.init("127.0.0.1", 6969);
 

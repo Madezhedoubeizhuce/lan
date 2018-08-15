@@ -19,8 +19,8 @@ public class PersistentConnectionClient<T, K> extends Client<T, K> {
 	private SocketChannel writeChannel;
 	private SelectionKey writeKey;
 
-	public PersistentConnectionClient(Dispatcher<T, K> dispatcher) {
-		super(dispatcher);
+	public PersistentConnectionClient(Sender<T, K> sender) {
+		super(sender);
 	}
 	
 	@Override
@@ -73,7 +73,7 @@ public class PersistentConnectionClient<T, K> extends Client<T, K> {
 			}
 			Attachment<T> attachment = createAttachment(listener, content);
 			writeKey.attach(attachment);
-			boolean writeSuccess = mDispatcher.send(writeChannel, attachment);
+			boolean writeSuccess = mSender.send(writeChannel, attachment);
 			if (!writeSuccess) {
 				Log.w(TAG, "write: a empty msg to server was intercepted!");
 				throw new RuntimeException("couldn't send a empty msg!");
@@ -135,7 +135,7 @@ public class PersistentConnectionClient<T, K> extends Client<T, K> {
 						Log.d(TAG, "current key is readable");
 						iterator.remove();
 
-						mDispatcher.receive((SocketChannel) key.channel(), getAttachment(key));
+						mSender.receive((SocketChannel) key.channel(), getAttachment(key));
 					}
 				}
 				Log.d(TAG, "end----------------------------------");

@@ -7,7 +7,7 @@ import com.alpha.lan.client.Client;
 import com.alpha.lan.client.DeviceAddress;
 import com.alpha.lan.client.OnResponseListener;
 import com.alpha.lan.client.ShortConnectionClient;
-import com.alpha.lan.client.TextMsgDispatcher;
+import com.alpha.lan.client.TextMsgSender;
 import com.alpha.lan.utils.Log;
 
 public class LANDevicesManager {
@@ -19,7 +19,7 @@ public class LANDevicesManager {
 	private boolean isClientStarted = false;
 
 	private LANDevicesManager() {
-		client = new ShortConnectionClient<String, String>(new TextMsgDispatcher());
+		client = new ShortConnectionClient<String, String>(new TextMsgSender());
 		initJmDnsServiceFinder();
 	}
 
