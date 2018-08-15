@@ -137,7 +137,7 @@ public class Server {
 				return;
 			}
 			
-//			Dispatcher.getInstance().dispatch(channel, listener);
+//			Dispatcher.getInstance().dispatch(channel, listener);//
 
 			try {
 				String receiveMsg = channelReader.read(channel);
