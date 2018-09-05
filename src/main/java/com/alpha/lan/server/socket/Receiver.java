@@ -3,9 +3,9 @@ package com.alpha.lan.server.socket;
 import java.nio.channels.SocketChannel;
 
 public abstract class Receiver {
-	protected OnRequestListener listener;
+	protected ReceiveListener listener;
 
-	public Receiver(OnRequestListener listener) {
+	public Receiver(ReceiveListener listener) {
 		this.listener = listener;
 	}
 

@@ -2,18 +2,18 @@ package com.alpha.lan.client;
 
 import java.nio.ByteBuffer;
 
-public class Request {
+public class Message {
 	private static byte id = 0;
 	private byte type;
 	private byte typeId;
 	private static final byte[] MSG_END = "EOF!".getBytes();
 	private ByteBuffer body;
 
-	public Request(ByteBuffer content) {
-		this(RequestType.TEXT, (byte) 0, content);
+	public Message(ByteBuffer content) {
+		this(MessageType.TEXT, (byte) 0, content);
 	}
 
-	public Request(RequestType type, byte typeId, ByteBuffer content) {
+	public Message(MessageType type, byte typeId, ByteBuffer content) {
 		this.id = ++this.id < 0 ? 0 : this.id;
 		this.type = type.value();
 		this.typeId = typeId;

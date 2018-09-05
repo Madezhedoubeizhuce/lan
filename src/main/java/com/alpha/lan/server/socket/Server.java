@@ -36,7 +36,7 @@ public class Server {
 		return port;
 	}
 
-	public void init(int port, OnRequestListener listener) throws IOException {
+	public void init(int port, ReceiveListener listener) throws IOException {
 		ServerSocketChannel serverChannel = ServerSocketChannel.open();
 		serverChannel.configureBlocking(false);
 		serverChannel.socket().bind(new InetSocketAddress(port));
@@ -63,7 +63,7 @@ public class Server {
 			msg = msg + STREAM_END;
 			channel.write(ByteBuffer.wrap(msg.getBytes()));
 			Log.d(TAG, "---------------------------------------------------------");
-			Log.i(TAG, "sendFile: \"" + msg + "\" to client");
+			Log.i(TAG, "response: \"" + msg + "\" to client");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -73,7 +73,7 @@ public class Server {
 		isServerRun = false;
 	}
 
-	private void poll(final OnRequestListener listener) throws IOException {
+	private void poll(final ReceiveListener listener) throws IOException {
 		Log.d(TAG, "NioServer start succeeded");
 
 		new Thread(new Runnable() {
@@ -106,7 +106,7 @@ public class Server {
 		}).start();
 	}
 
-	private void processSelectionKey(SelectionKey key, OnRequestListener listener) throws IOException {
+	private void processSelectionKey(SelectionKey key, ReceiveListener listener) throws IOException {
 		Log.d(TAG, "processSelectionKey");
 		if (key.isAcceptable()) {
 			Log.d(TAG, "processSelectionKey: acceptable");
@@ -137,26 +137,26 @@ public class Server {
 				return;
 			}
 			
-//			Dispatcher.getInstance().dispatch(channel, listener);//
+			Dispatcher.getInstance().dispatch(channel, listener);//
 
-			try {
-				String receiveMsg = channelReader.read(channel);
-				Log.i(TAG, "processSelectionKey: client msg before parse -> " + receiveMsg);
-				Log.i(TAG, "processSelectionKey: client msg is -> " + receiveMsg);
-
-				if (receiveMsg == null || "".equals(receiveMsg)) {
-					channel.close();
-					Log.w(TAG, "processSelectionKey: client sendFile  empty msg");
-				} else if (receiveMsg.startsWith("heartbeat msg")) {
-//                    HeartbeatChecker.getInstance().onReceive();
-					channel.write(ByteBuffer.wrap((receiveMsg + STREAM_END).getBytes()));
-				} else {
-					listener.onReceive(receiveMsg, channel);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				channel.close();
-			}
+//			try {
+//				String receiveMsg = channelReader.read(channel);
+//				Log.i(TAG, "processSelectionKey: client msg before parse -> " + receiveMsg);
+//				Log.i(TAG, "processSelectionKey: client msg is -> " + receiveMsg);
+//
+//				if (receiveMsg == null || "".equals(receiveMsg)) {
+//					channel.close();
+//					Log.w(TAG, "processSelectionKey: client sendFile  empty msg");
+//				} else if (receiveMsg.startsWith("heartbeat msg")) {
+////                    HeartbeatChecker.getInstance().onReceive();
+//					channel.write(ByteBuffer.wrap((receiveMsg + STREAM_END).getBytes()));
+//				} else {
+//					listener.onReceive(receiveMsg, channel);
+//				}
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//				channel.close();
+//			}
 		}
 	}
 }

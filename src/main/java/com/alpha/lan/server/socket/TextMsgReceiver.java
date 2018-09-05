@@ -8,7 +8,7 @@ public class TextMsgReceiver extends Receiver {
 	private static final String TAG = TextMsgReceiver.class.getSimpleName();
 	private StringBuilder receiveMsg = new StringBuilder();
 
-	public TextMsgReceiver(OnRequestListener listener) {
+	public TextMsgReceiver(ReceiveListener listener) {
 		super(listener);
 	}
 
@@ -28,9 +28,7 @@ public class TextMsgReceiver extends Receiver {
 	@Override
 	public void onComplete(SocketChannel channel) {
 		Log.d(TAG, "onComplete(): receiveMsg data complete");
-		if (receiveMsg.toString().startsWith("heartbeat msg")) {
-			return;
-		}
+		
 		listener.onReceive(receiveMsg.toString(), channel);
 	}
 

@@ -1,11 +1,11 @@
 package com.alpha.lan.client;
 
-public enum RequestType {
-	TEXT((byte) 0), FILE((byte) 1);
+public enum MessageType {
+	TEXT((byte) 0), FILE((byte) 1), HEARTBEAT((byte) 2);
 
 	private byte value;
 
-	RequestType(byte value) {
+	MessageType(byte value) {
 		this.value = value;
 	}
 
@@ -13,12 +13,14 @@ public enum RequestType {
 		return this.value;
 	}
 
-	public static RequestType valueOf(byte value) {
+	public static MessageType valueOf(byte value) {
 		switch (value) {
 		case 0:
 			return TEXT;
 		case 1:
 			return FILE;
+		case 2:
+			return HEARTBEAT;
 		default:
 			return null;
 		}

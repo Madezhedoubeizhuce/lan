@@ -92,6 +92,10 @@ public class ChannelReader {
 			}
 		}
 
+		if (count < 0) {
+			return new byte[0];
+		}
+
 		buf.flip();
 		byte[] bufArr = new byte[count];
 		buf.get(bufArr, 0, count);
@@ -120,7 +124,7 @@ public class ChannelReader {
 			int offset = 3;
 			int writeLen = buf.length - 3;
 			while (!Arrays.equals(end, MSG_END)) {
-				listener.onStart(RequestType.valueOf(type));
+				listener.onStart(MessageType.valueOf(type));
 
 				ReceiveData data = new ReceiveData(id, type, typeId);
 				data.setData(createBuffer(buf, offset, writeLen));
@@ -141,7 +145,7 @@ public class ChannelReader {
 
 			// 说明一次就读完了所有数据
 			if (offset == 3) {
-				listener.onStart(RequestType.valueOf(type));
+				listener.onStart(MessageType.valueOf(type));
 			}
 
 			writeLen = writeLen - MSG_END.length;

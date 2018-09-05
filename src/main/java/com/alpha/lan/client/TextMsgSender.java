@@ -20,11 +20,11 @@ public class TextMsgSender implements Sender<String, String> {
 	public boolean send(SocketChannel channel, Attachment<String> attachment) throws IOException {
 		String msg = attachment.getData();
 		if (msg != null && !"".equals(msg)) {
-//			Request request = new Request(ByteBuffer.wrap(msg.getBytes()));
-//			channel.write(request.getBody());
+			Message message = new Message(ByteBuffer.wrap(msg.getBytes()));
+			channel.write(message.getBody());
 			
-			msg = msg + "EOF!";
-			channel.write(ByteBuffer.wrap(msg.getBytes()));
+//			msg = msg + "EOF!";
+//			channel.write(ByteBuffer.wrap(msg.getBytes()));
 
 			Log.d(TAG, "---------------------------------------------------------");
 			Log.i(TAG, "write: \"" + msg + "\" to server");

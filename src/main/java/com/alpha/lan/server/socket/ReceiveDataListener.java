@@ -1,9 +1,9 @@
 package com.alpha.lan.server.socket;
 
-import com.alpha.lan.client.RequestType;
+import com.alpha.lan.client.MessageType;
 
 public interface ReceiveDataListener {
-	void onStart(RequestType type);
+	void onStart(MessageType type);
 	
 	void onData(ReceiveData buf);
 	

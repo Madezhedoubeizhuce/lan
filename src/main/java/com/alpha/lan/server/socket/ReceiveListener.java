@@ -2,6 +2,6 @@ package com.alpha.lan.server.socket;
 
 import java.nio.channels.SocketChannel;
 
-public interface OnRequestListener {
+public interface ReceiveListener {
 	void onReceive(String msg, SocketChannel channel);
 }

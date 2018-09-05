@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.nio.channels.SocketChannel;
 
 import com.alpha.lan.server.jmdns.JmDnsServiceRegister;
-import com.alpha.lan.server.socket.OnRequestListener;
+import com.alpha.lan.server.socket.ReceiveListener;
 import com.alpha.lan.server.socket.Server;
 import com.alpha.lan.utils.Log;
 
@@ -15,7 +15,7 @@ public class ServerTester {
 		try {
 			Server server = new Server();
 			int port = server.createPort();
-			server.init(port, new OnRequestListener() {
+			server.init(port, new ReceiveListener() {
 				
 				@Override
 				public void onReceive(String msg, SocketChannel channel) {
